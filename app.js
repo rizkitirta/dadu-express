@@ -11,6 +11,7 @@ const createError = require('http-errors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
+var permainanRouter = require('./routes/permainan');
 
 var app = express();
 app.use(cors());
@@ -41,6 +42,7 @@ mongoose
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/v1/authentication', authRouter);
+app.use('/api/v1/permainan', permainanRouter);
 
 // PORT
 const port = process.env.PORT || 4000;

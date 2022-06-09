@@ -1,21 +1,34 @@
 const jwt = require("jsonwebtoken");
-
-const config = process.env;
+const User = require("../models/user");
 
 const verifyToken = (req, res, next) => {
-  const token =
-    req.body.token || req.query.token || req.headers["x-access-token"];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(403).send("A token is required for authentication");
+    return res.status(403).send({ message: "No token provided!" });
   }
-  try {
-    const decoded = jwt.verify(token, config.TOKEN_KEY);
-    req.user = decoded;
-  } catch (err) {
-    return res.status(401).send("Invalid Token");
+
+  if (authHeader.split(" ")[0] !== "Bearer") {
+    return res.status(500).send({
+      message: "Incorrect token format",
+    });
   }
-  return next();
+
+  jwt.verify(token, process.env.TOKEN_KEY, (err, data) => {
+    const { TokenExpiredError } = jwt;
+    if (err instanceof TokenExpiredError) {
+      return res
+        .status(401)
+        .send({ message: "Unauthorized! Access Token was expired!" });
+    }
+
+    console.log(err);
+    if (err) return res.sendStatus(401);
+    req.user = data;
+
+    next();
+  });
 };
 
 module.exports = verifyToken;
